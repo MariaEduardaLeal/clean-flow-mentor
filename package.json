@@ -1,9 +1,10 @@
 {
   "name": "clean-flow-mentor",
   "publisher": "MariaEduardadeMedeirosLeal", 
+  "icon": "logo.png",
   "displayName": "Clean Flow Mentor",
   "description": "O sensei oficial da equipe para aplicar nossos idiomas de Clean Code em PHP e JavaScript.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.109.0"
   },
