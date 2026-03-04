@@ -4,9 +4,14 @@
   "icon": "logo.png",
   "displayName": "Clean Flow Mentor",
   "description": "O sensei oficial da equipe para aplicar nossos idiomas de Clean Code em PHP e JavaScript.",
-  "version": "0.0.2",
+  "version": "0.0.3",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MariaEduardaLeal/clean-flow-mentor"
+  },
   "engines": {
-    "vscode": "^1.109.0"
+    "vscode": "^1.60.0"
   },
   "categories": [
     "Other"
@@ -39,7 +44,7 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.109.0",
+    "@types/vscode": "^1.60.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "typescript-eslint": "^8.56.1",
