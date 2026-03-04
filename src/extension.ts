@@ -19,6 +19,30 @@ export function activate(context: vscode.ExtensionContext) {
             diagnostics.push(new vscode.Diagnostic(range, mensagem, severidade));
         };
 
+        const adicionarAvisoSimples = (match: RegExpExecArray, mensagem: string, severidade: vscode.DiagnosticSeverity) => {
+            const startPos = document.positionAt(match.index);
+            const endPos = document.positionAt(match.index + match[0].length);
+            const range = new vscode.Range(startPos, endPos);
+            diagnostics.push(new vscode.Diagnostic(range, mensagem, severidade));
+        };
+
+        // REGRAS GERAIS (Ambos)
+        // console.log
+        const regexConsoleLog = /\bconsole\.log\b/g;
+        let matchConsoleLog;
+        while ((matchConsoleLog = regexConsoleLog.exec(text)) !== null) {
+            // Trocado para Warning (Amarelo)
+            adicionarAvisoSimples(matchConsoleLog, `Guia de Idiomas: 'console.log' detectado. Lembre-se de remover antes de enviar para produção.`, vscode.DiagnosticSeverity.Warning);
+        }
+
+        // localhost
+        const regexLocalhost = /\blocalhost:[0-9]+\b/g;
+        let matchLocalhost;
+        while ((matchLocalhost = regexLocalhost.exec(text)) !== null) {
+            // Trocado para Warning (Amarelo)
+            adicionarAvisoSimples(matchLocalhost, `Guia de Idiomas: URL hardcoded 'localhost' detectada. Considere usar variáveis de ambiente.`, vscode.DiagnosticSeverity.Warning);
+        }
+
         // 1. CLASSES -> PascalCase
         const regexClass = /\bclass\s+([a-zA-Z0-9_]+)/g;
         let matchClass;
@@ -62,8 +86,8 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             }
 
-            // 4. ELEMENTOS DOM -> $prefixo
-            const regexDOM = /const\s+([a-zA-Z0-9_]+)\s*=\s*document\.(?:querySelector|getElementById)/g;
+            // 4. ELEMENTOS DOM -> $prefixo. Suporta document.x, $() e jQuery()
+            const regexDOM = /(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=\s*(?:document\.(?:querySelector|getElementById)|\$|jQuery)\s*\(/g;
             let matchDOM;
             while ((matchDOM = regexDOM.exec(text)) !== null) {
                 const varDOM = matchDOM[1];
@@ -73,8 +97,17 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
 
-        // VARIÁVEIS LOCAIS (PHP)
+        // REGRAS PHP
         if (document.languageId === 'php') {
+            // file_put_contents
+            const regexFilePut = /\bfile_put_contents\b/g;
+            let matchFilePut;
+            while ((matchFilePut = regexFilePut.exec(text)) !== null) {
+                // Trocado para Warning (Amarelo)
+                adicionarAvisoSimples(matchFilePut, `Guia de Idiomas: 'file_put_contents' detectado. Pode indicar código de debug esquecido.`, vscode.DiagnosticSeverity.Warning);
+            }
+
+            // VARIÁVEIS LOCAIS (PHP)
             const regexPhpVar = /\$([a-zA-Z0-9_]+)\b/g;
             let matchPhpVar;
             const ignorarPhp = ['this', 'GLOBALS', '_SERVER', '_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_REQUEST', '_ENV'];
@@ -86,6 +119,11 @@ export function activate(context: vscode.ExtensionContext) {
                     adicionarAviso(matchPhpVar, 1, `Guia de Idiomas: Variáveis PHP devem usar snake_case (ex: $data_nascimento).`, vscode.DiagnosticSeverity.Warning);
                 }
             }
+        }
+
+        if (diagnostics.length > 0) {
+            const rangeTopo = new vscode.Range(0, 0, 0, 0);
+            diagnostics.unshift(new vscode.Diagnostic(rangeTopo, `Clean Flow: Exibindo ${diagnostics.length} aviso(s) neste arquivo.`, vscode.DiagnosticSeverity.Information));
         }
 
         diagnosticCollection.set(document.uri, diagnostics);
